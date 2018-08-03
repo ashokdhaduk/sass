@@ -189,6 +189,7 @@ module Sass::Script::Value
     # @raise [Sass::UnitConversionError] if `other` has incompatible units
     def mod(other)
       if other.is_a?(Number)
+        return Number.new(Float::NAN) if other.value == 0
         operate(other, :%)
       else
         raise NoMethodError.new(nil, :mod)
@@ -472,7 +473,7 @@ module Sass::Script::Value
         sans_common_units(@numerator_units, @denominator_units)
 
       @denominator_units.each_with_index do |d, i|
-        next unless convertable?(d) && (u = @numerator_units.find(&method(:convertable?)))
+        next unless convertable?(d) && (u = @numerator_units.find {|n| convertable?([n, d])})
         @value /= conversion_factor(d, u)
         @denominator_units.delete_at(i)
         @numerator_units.delete_at(@numerator_units.index(u))
